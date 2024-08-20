@@ -1,0 +1,67 @@
+
+FROM openjdk:23-ea-17-nanoserver-1809
+
+COPY target/docker_rtb.jar  docker_rtb.jar
+
+ENTRYPOINT [ "java","-jar","/docker_rtb.jar" ]
+
+
+
+
+
+
+---- build doker image--------------
+docker build -t ajaykumargkv/docker-springbootjpa .
+
+
+------to run docker -------------
+docker run --network="host" -p 9090:8080 01c7
+9090 local port and 8080 is docker container port  01c7 is image ID
+
+
+
+Steps to setup network to connect with mysql with spring app.
+1.docker pull mysql:8.0.29
+2.docker network create springboot-mysql-net
+3.docker network ls
+    1aea6890ae89   springboot-mysql-net   bridge    local
+    
+4.run the mysql container in the network         
+     a. to run mysql using docker and above network
+      docker run --name mysqldb --network springboot-mysql-net -e MYSQL_RO0T_PASS=PSDD -e MYSQL_DATABASE=DBNAME -e MYSQL_USER=DBUSER -e MYSQL_PASSWORD=24234 -D mysql:8.029
+     ie docker run --name mysqldb --network springboot-mysql-net -e MYSQL_ROOT_PASSWORD=DbUser@123 -e MYSQL_DATABASE=course-api -e MYSQL_USER=dbuser -e MYSQL_PASSWORD=DbUser@123 -d mysql:8.0.29
+     b. docker ps  --to check mysql is up or not
+     c. docker exec -it 94a53 bash  --to enter in container and connect mysql to check db if require create table and db
+     d. mysql -udbuser -pDbUser@123 --enter into database
+     e. create tables; 
+     CREATE TABLE topic ( ID int NOT NULL AUTO_INCREMENT, DESCRIPTION varchar(255) DEFAULT NULL, NAME varchar(255) DEFAULT NULL, PRIMARY KEY (ID) ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+5. update application properties
+       ## when using network  deployment with  docker
+       spring.datasource.url=jdbc:mysql://mysqldb:3306/course-api
+6. docker build -t springbootmysql .
+
+7 start spring boot container on the same network .
+  docker run --network springboot-mysql-net --name springboot-container -p 8080:8080 -d springbootmysql
+  
+  
+  thats end 
+  
+  
+  2nd approach :
+  Steps :
+    1. create docker-compose.yml
+    2. add all service ie mysql and spring app
+    3. run docker-compose up
+    --it will up first mysql and then spring app
+    4.  docker exec -it 94a53 bash  --to enter in container and connect mysql to check db if require create table and db
+         a. mysql -udbuser -pDbUser@123 --enter into database
+         b. create tables; 
+        CREATE TABLE topic ( ID int NOT NULL AUTO_INCREMENT, DESCRIPTION varchar(255) DEFAULT NULL, NAME varchar(255) DEFAULT NULL, PRIMARY KEY (ID) ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+ now we can test out api.
+
+
+
+
+
+
+
